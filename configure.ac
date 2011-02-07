@@ -4,7 +4,7 @@ AC_CONFIG_MACRO_DIR([m4])
 AC_USE_SYSTEM_EXTENSIONS
 
 AC_PROG_INSTALL
-AC_PROG_CXX
+AC_PROG_CC
 AC_PROG_LIBTOOL
 LT_PATH_LD
 AUTOCONF_ENV="SHELL=/bin/sh"
@@ -17,12 +17,22 @@ AC_ARG_ENABLE(debug,
         , , enable_debug=$debug_default)
 if test "$enable_debug" = "yes"; then
     AC_MSG_RESULT(yes)
-    CXXFLAGS="-Wall -Werror -g -O0 -fno-inline"
+    CFLAGS="-Wall -Werror -g -O0 -fno-inline"
     AC_DEFINE(DEBUG)
 else
     AC_MSG_RESULT(no)
-    CXXFLAGS="-Wall -O3 -fomit-frame-pointer"
+    CFLAGS="-Wall -O3 -fomit-frame-pointer"
 fi
+
+AC_CHECK_HEADERS(CL/cl.h, [], [
+    echo "OpenCL header files not found in your system"
+    exit -1
+])
+
+AC_CHECK_LIB(OpenCL, clGetPlatformIDs, [],[ 
+    echo "OpenCL library not found in your system"
+    exit -1
+])
 
 AC_CONFIG_FILES([
     Makefile

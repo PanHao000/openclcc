@@ -15,20 +15,20 @@
 
 #include "io.h"
 
+#include <stdio.h>
+#include <stdlib.h>
+
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <unistd.h>
 
-#include <errno.h>
-
-int opencl_open_kernel(const char *name, char ** buffer)
+int opencl_open_kernel(const char *name, opencl_kernel_t *kernel)
 {
     FILE *fp = NULL;
     struct stat file_stat;
-    int ret = 0;
 
     /* Init buffer to NULL */
-    *buffer = NULL;
+    kernel->buffer = NULL;
 
     /* Get information about the file */
     if(stat(name, &file_stat) < 0) return -1;
@@ -37,26 +37,29 @@ int opencl_open_kernel(const char *name, char ** buffer)
     if((fp = fopen(name, "rt")) == NULL) return -1;
 
     /* Allocate the buffer which will contain the kernel */
-    if((*buffer = (char *)malloc(file_stat.st_size + 1)) == NULL)
+    if((kernel->buffer = (char *)malloc(file_stat.st_size + 1)) == NULL)
         return -1;
+    kernel->size = file_stat.st_size;
 
     /* Read the kernel file */
-    if(fread((void *)buffer, sizeof(char), file_stat.st_size, fp)
+    if(fread((void *)kernel->buffer, sizeof(char), file_stat.st_size, fp)
             != file_stat.st_size) {
-        free(*buffer);
-        *buffer = NULL;
+        free(kernel->buffer);
+        kernel->buffer = NULL;
+        kernel->size = 0;
     }
-    else (*buffer)[file_stat.st_size] = 0; /* Set end of string */
+    else kernel->buffer[file_stat.st_size] = 0; /* Set end of string */
 
     fclose(fp);
     
-    if(*buffer == NULL) return -1;
+    if(kernel->buffer == NULL) return -1;
     return 0;
 }
 
 
-int opencl_release_kernel(char *buffer)
+int opencl_release_kernel(opencl_kernel_t *kernel)
 {
-    if(buffer != NULL) free(buffer);
+    if(kernel->buffer != NULL) free(kernel->buffer);
+    kernel->size = 0;
     return 0;
 }    

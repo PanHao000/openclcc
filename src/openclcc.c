@@ -13,41 +13,49 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+#include <errno.h>
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
-#include <errno.h>
+#include "io.h"
+#include "opencl.h"
 
 static int usage(const char *name)
 {
-    fprintf(stdout, "Usage: %s <file.cl>\n");
+    fprintf(stdout, "Usage: %s <file.cl>\n", name);
     return -1;
 }
 
-static int handle_error(const char *file)
+static int handle_standard_error(const char *file)
 {
     fprintf(stderr, "%s: Error: %s\n", file, strerror(errno));
     return -1;
 }
 
+
 int main(int argc, char *argv[])
 {
     int i;
-    char *kernel = NULL;
+    opencl_kernel_t buffer;
+    cl_context cl_ctx;
 
-    if(argc == 1) return usage();
+    if(argc == 1) return usage(argv[0]);
 
     /* TODO: initialize OpenCL here */
+    if(opencl_init(&cl_ctx) < 0) return -1;
 
-    for(i = 1; i < argc + 1; i++) {
+
+    for(i = 1; i < argc; i++) {
         if(opencl_open_kernel(argv[i], &buffer) < 0) {
-            handle_error(argv[i]);   
+            handle_standard_error(argv[i]);   
         }
 
         /* TODO: compile kernel and show compilation errors (if any) */
-        opencl_release_kernel(kernel);
+        opencl_release_kernel(&buffer);
     }
 
+    opencl_fini(cl_ctx);
     return 0;
 }

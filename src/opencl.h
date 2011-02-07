@@ -13,17 +13,23 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#ifndef OPENCLCC_IO_H_
-#define OPENCLCC_IO_H_
+#ifndef OPENCLCC_OPENCL_H_
+#define OPENCLCC_OPENCL_H_
 
-#include "opencl.h"
+#include <CL/cl.h>
+
+typedef struct opencl_kernel {
+    char *buffer;
+    size_t size;
+} opencl_kernel_t;
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-int opencl_open_kernel(const char *name, opencl_kernel_t *kernel);
-int opencl_release_kernel(opencl_kernel_t *kernel);
+int opencl_init(cl_context *cl_ctx);
+int opencl_fini(cl_context cl_ctx);
+int opencl_compile(opencl_kernel_t kernel);
 
 #ifdef __cplusplus
 }
