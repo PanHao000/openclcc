@@ -37,13 +37,12 @@ static int handle_standard_error(const char *file)
 
 int main(int argc, char *argv[])
 {
-    int i;
+    int i, ret;
     opencl_kernel_t buffer;
     cl_context cl_ctx;
 
     if(argc == 1) return usage(argv[0]);
 
-    /* TODO: initialize OpenCL here */
     if(opencl_init(&cl_ctx) < 0) return -1;
 
 
@@ -52,8 +51,10 @@ int main(int argc, char *argv[])
             handle_standard_error(argv[i]);   
         }
 
-        /* TODO: compile kernel and show compilation errors (if any) */
+        ret = opencl_compile(cl_ctx, buffer, "");
+
         opencl_release_kernel(&buffer);
+        if(ret < 0) return -1;
     }
 
     opencl_fini(cl_ctx);

@@ -39,6 +39,7 @@ int opencl_open_kernel(const char *name, opencl_kernel_t *kernel)
     /* Allocate the buffer which will contain the kernel */
     if((kernel->buffer = (char *)malloc(file_stat.st_size + 1)) == NULL)
         return -1;
+    kernel->name = name;
     kernel->size = file_stat.st_size;
 
     /* Read the kernel file */

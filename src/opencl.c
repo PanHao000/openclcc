@@ -23,6 +23,73 @@ static int opencl_handle_error(cl_int error)
     return -1;
 }
 
+static void opencl_print_compilation_log(char *log, size_t log_size)
+{
+    fprintf(stderr, "%s", log);
+}
+
+static int opencl_handle_compilation_errors(cl_program program, opencl_kernel_t kernel)
+{
+    cl_int ret, num_devices;
+    cl_device_id *devices = NULL;
+    int i;
+    cl_build_status build_status = CL_BUILD_NONE;
+    char * log = NULL;
+    size_t log_size = 0;
+
+    /* Get the number of devices associated to the program, allocate memory
+     * and get the associated devices */
+    if((ret = clGetProgramInfo(program, CL_PROGRAM_NUM_DEVICES,
+            sizeof(num_devices), &num_devices, NULL)) != CL_SUCCESS) {
+        return opencl_handle_error(ret);
+    }
+
+    if((devices = (cl_device_id *)malloc(num_devices * sizeof(cl_device_id))) == NULL)
+        return -1;
+
+    if((ret = clGetProgramInfo(program, CL_PROGRAM_DEVICES,
+            num_devices * sizeof(cl_device_id), devices, NULL)) != CL_SUCCESS) {
+        free(devices);
+        return opencl_handle_error(ret);
+    }
+
+    /* Check the output for each device */
+    for(i = 0; i < num_devices; i++) {
+        /* If there are no compilation errors for the device, continue */
+        if((ret = clGetProgramBuildInfo(program, devices[i], CL_PROGRAM_BUILD_STATUS,
+                sizeof(build_status), &build_status, NULL)) != CL_SUCCESS) {
+            return opencl_handle_error(ret);
+        }
+        if(build_status != CL_BUILD_ERROR) continue;
+
+        /* Get the compilation log, and show it to the user */
+        if((ret = clGetProgramBuildInfo(program, devices[i], CL_PROGRAM_BUILD_LOG,
+                0, NULL, &log_size)) != CL_SUCCESS) {
+            return opencl_handle_error(ret);
+        }
+        if(log_size == 0) {
+            fprintf(stderr,"%s: Undefined compilation error\n", kernel.name);
+            continue;
+        }
+        if((log = (char *)malloc(log_size * sizeof(char))) == NULL) {
+            return -1;
+        }
+
+        if((ret = clGetProgramBuildInfo(program, devices[i], CL_PROGRAM_BUILD_LOG,
+                log_size, log, NULL)) != CL_SUCCESS) {
+            free(log);
+            return opencl_handle_error(ret);
+        }
+
+        opencl_print_compilation_log(log, log_size);
+
+        free(log);
+    }
+
+    return 0;
+}
+
+
 int opencl_init(cl_context *cl_ctx)
 {
     cl_platform_id cl_platform;
@@ -47,8 +114,24 @@ int opencl_fini(cl_context cl_ctx)
     return 0;
 }
 
-int opencl_compile(opencl_kernel_t kernel)
+int opencl_compile(cl_context cl_ctx, opencl_kernel_t kernel, const char *args)
 {
-    // TODO: Get cl_program and compile kernel
+    cl_program program;
+    cl_int ret;
+
+    program = clCreateProgramWithSource(cl_ctx, 1, (const char **)&kernel.buffer, &kernel.size, &ret);
+    if(ret != CL_SUCCESS)
+        return opencl_handle_error(ret);
+
+    if((ret = clBuildProgram(program, 0, NULL, args, NULL, NULL)) != CL_SUCCESS) {
+        opencl_handle_compilation_errors(program, kernel);
+    }
+    else {
+        fprintf(stdout, "%s: Compilation succeded!\n", kernel.name);
+    }
+
+    if((ret = clReleaseProgram(program)) != CL_SUCCESS)
+        return opencl_handle_error(ret);
+
     return 0;
 }

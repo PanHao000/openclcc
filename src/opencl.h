@@ -19,6 +19,7 @@
 #include <CL/cl.h>
 
 typedef struct opencl_kernel {
+    const char *name;
     char *buffer;
     size_t size;
 } opencl_kernel_t;
@@ -29,7 +30,7 @@ extern "C" {
 
 int opencl_init(cl_context *cl_ctx);
 int opencl_fini(cl_context cl_ctx);
-int opencl_compile(opencl_kernel_t kernel);
+int opencl_compile(cl_context cl_ctx, opencl_kernel_t kernel, const char *args);
 
 #ifdef __cplusplus
 }
