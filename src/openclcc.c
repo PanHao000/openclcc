@@ -41,7 +41,7 @@ static char *build_args_string(int argc, char *argv[])
 
     /* First pass; calculate the argument string size */
     for(i = 1; i < argc; i++) {
-        if(*argv[i] != '-') continue;
+        if(*argv[i] != '-' && opencl_check_file(argv[i]) == 0) continue;
         args_size += strlen(argv[i]) + 1;
     }
 
@@ -49,7 +49,7 @@ static char *build_args_string(int argc, char *argv[])
     if((args = (char *)malloc(args_size)) == NULL) return args;
     *args = 0; /* End of String */
     for(i = 0; i < argc; i++) {
-        if(*argv[i] != '-') continue;
+        if(*argv[i] != '-' && opencl_check_file(argv[i]) == 0) continue;
         ptr += snprintf(&args[ptr], (args_size - ptr), "%s ", argv[i]);
     }
     
@@ -70,7 +70,7 @@ int main(int argc, char *argv[])
     fprintf(stdout, "Compiler flags: %s\n", args);
 
     for(i = 1; i < argc; i++) {
-        if(*argv[i] == '-') continue; /* Skip compiler flags */
+        if(*argv[i] == '-' || opencl_check_file(argv[i]) < 0) continue; /* Skip compiler flags */
         if(opencl_open_kernel(argv[i], &kernel) < 0) {
             handle_standard_error(argv[i]);   
         }

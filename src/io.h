@@ -22,6 +22,7 @@
 extern "C" {
 #endif
 
+int opencl_check_file(const char *name);
 int opencl_open_kernel(const char *name, opencl_kernel_t *kernel);
 int opencl_release_kernel(opencl_kernel_t *kernel);
 

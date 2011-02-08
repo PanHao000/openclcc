@@ -22,6 +22,14 @@
 #include <sys/stat.h>
 #include <unistd.h>
 
+int opencl_check_file(const char *name)
+{
+    struct stat file_stat;
+
+    if(stat(name, &file_stat) < 0) return -1;
+    return 0;
+}
+
 int opencl_open_kernel(const char *name, opencl_kernel_t *kernel)
 {
     FILE *fp = NULL;
