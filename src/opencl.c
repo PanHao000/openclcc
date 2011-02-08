@@ -14,6 +14,7 @@
 */
 
 #include "opencl.h"
+#include "log.h"
 
 #include <stdio.h>
 
@@ -25,7 +26,12 @@ static int opencl_handle_error(cl_int error)
 
 static void opencl_print_compilation_log(size_t log_size, char *log, opencl_kernel_t kernel)
 {
-    fprintf(stderr, "%s", log);
+    char *new_log = opencl_log_parse(log_size, log, kernel.name);
+    if(new_log == NULL) fprintf(stdout, "%s", log);
+    else {
+        fprintf(stdout, "%s", new_log);
+        free(new_log);
+    }
 }
 
 static int opencl_handle_compilation_errors(cl_program program, opencl_kernel_t kernel)
