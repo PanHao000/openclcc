@@ -23,7 +23,7 @@ static int opencl_handle_error(cl_int error)
     return -1;
 }
 
-static void opencl_print_compilation_log(char *log, size_t log_size)
+static void opencl_print_compilation_log(size_t log_size, char *log, opencl_kernel_t kernel)
 {
     fprintf(stderr, "%s", log);
 }
@@ -81,7 +81,7 @@ static int opencl_handle_compilation_errors(cl_program program, opencl_kernel_t 
             return opencl_handle_error(ret);
         }
 
-        opencl_print_compilation_log(log, log_size);
+        opencl_print_compilation_log(log_size, log, kernel);
 
         free(log);
     }

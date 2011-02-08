@@ -34,26 +34,50 @@ static int handle_standard_error(const char *file)
     return -1;
 }
 
+static char *build_args_string(int argc, char *argv[])
+{
+    int i, args_size = 1, ptr = 0;
+    char *args = NULL;
+
+    /* First pass; calculate the argument string size */
+    for(i = 1; i < argc; i++) {
+        if(*argv[i] != '-') continue;
+        args_size += strlen(argv[i]) + 1;
+    }
+
+    /* Seconf pass; allocate argument string and build it */
+    if((args = (char *)malloc(args_size)) == NULL) return args;
+    *args = 0; /* End of String */
+    for(i = 0; i < argc; i++) {
+        if(*argv[i] != '-') continue;
+        ptr += snprintf(&args[ptr], (args_size - ptr), "%s ", argv[i]);
+    }
+    
+    return args;
+}
 
 int main(int argc, char *argv[])
 {
     int i, ret;
-    opencl_kernel_t buffer;
+    opencl_kernel_t kernel;
     cl_context cl_ctx;
+    char *args = NULL;
 
     if(argc == 1) return usage(argv[0]);
 
     if(opencl_init(&cl_ctx) < 0) return -1;
-
+    if((args = build_args_string(argc, argv)) == NULL) return -1;
+    fprintf(stdout, "Compiler flags: %s\n", args);
 
     for(i = 1; i < argc; i++) {
-        if(opencl_open_kernel(argv[i], &buffer) < 0) {
+        if(*argv[i] == '-') continue; /* Skip compiler flags */
+        if(opencl_open_kernel(argv[i], &kernel) < 0) {
             handle_standard_error(argv[i]);   
         }
 
-        ret = opencl_compile(cl_ctx, buffer, "");
+        ret = opencl_compile(cl_ctx, kernel, args);
 
-        opencl_release_kernel(&buffer);
+        opencl_release_kernel(&kernel);
         if(ret < 0) return -1;
     }
 
