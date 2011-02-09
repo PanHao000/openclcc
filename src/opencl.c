@@ -92,7 +92,7 @@ static int opencl_handle_compilation_errors(cl_program program, opencl_kernel_t 
         free(log);
     }
 
-    return 0;
+    return -1;
 }
 
 
@@ -131,6 +131,8 @@ int opencl_compile(cl_context cl_ctx, opencl_kernel_t kernel, const char *args)
 
     if((ret = clBuildProgram(program, 0, NULL, args, NULL, NULL)) != CL_SUCCESS) {
         opencl_handle_compilation_errors(program, kernel);
+        clReleaseProgram(program);
+        return opencl_handle_error(ret);
     }
     else {
         fprintf(stdout, "%s: Compilation succeded!\n", kernel.name);
