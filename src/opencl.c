@@ -29,7 +29,7 @@ static void opencl_print_compilation_log(size_t log_size, char *log, opencl_kern
     char *new_log = opencl_log_parse(log_size, log, kernel.name);
     if(new_log == NULL) fprintf(stdout, "%s", log);
     else {
-        fprintf(stdout, "%s", new_log);
+        fprintf(stderr, "%s", new_log);
         free(new_log);
     }
 }
@@ -44,7 +44,7 @@ static int opencl_handle_compilation_errors(cl_program program, opencl_kernel_t 
     size_t log_size = 0;
 
     /* Get the number of devices associated to the program, allocate memory
-     * and get the associated devices */
+      and get the associated devices */
     if((ret = clGetProgramInfo(program, CL_PROGRAM_NUM_DEVICES,
             sizeof(num_devices), &num_devices, NULL)) != CL_SUCCESS) {
         return opencl_handle_error(ret);
