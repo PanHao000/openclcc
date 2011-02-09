@@ -24,6 +24,12 @@ else
     CFLAGS="-Wall -O3 -fomit-frame-pointer"
 fi
 
+AC_ARG_WITH([include],
+            [AS_HELP_STRING([--with-include],
+                            [Add include directory path])],
+                            [CPPFLAGS="$CPPFLAGS -I$withval"],
+                            [])
+
 AC_CHECK_HEADERS(CL/cl.h, [], [
     echo "OpenCL header files not found in your system"
     exit -1

@@ -45,7 +45,7 @@ static char *build_args_string(int argc, char *argv[])
         args_size += strlen(argv[i]) + 1;
     }
 
-    /* Seconf pass; allocate argument string and build it */
+    /* Second pass; allocate argument string and build it */
     if((args = (char *)malloc(args_size)) == NULL) return args;
     *args = 0; /* End of String */
     for(i = 0; i < argc; i++) {
