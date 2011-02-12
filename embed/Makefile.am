@@ -1,3 +1,3 @@
 dist_bin_SCRIPTS = openclcc-embed
-dist_pkgdata_DATA = script.ld
+dist_pkgdata_DATA = openclcc.ld
 CLEANFILES = $(bin_SCRIPTS)

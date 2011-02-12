@@ -22,16 +22,16 @@
 #include <cstdio>
 
 extern "C" {
-    extern char __gmac_ocl_code_start __attribute__((weak));
-    extern char __gmac_ocl_code_end   __attribute__((weak));
+    extern char __ocl_code_start __attribute__((weak));
+    extern char __ocl_code_end   __attribute__((weak));
 };
 
 int print()
 {
-    size_t size = &__gmac_ocl_code_end - &__gmac_ocl_code_start;
-    char *start = &__gmac_ocl_code_start;
+    size_t size = &__ocl_code_end - &__ocl_code_start;
+    char *start = &__ocl_code_start;
 
-    printf("%p-%p\n", &__gmac_ocl_code_start, &__gmac_ocl_code_end);
+    printf("%p-%p\n", &__ocl_code_start, &__ocl_code_end);
     printf("%zd\n", size);
     printf("%s\n", start);
 
