@@ -43,5 +43,7 @@ AC_CHECK_LIB(OpenCL, clGetPlatformIDs, [],[
 AC_CONFIG_FILES([
     Makefile
     src/Makefile
+    embed/Makefile
+    embed/openclcc-embed
 ])
 AC_OUTPUT
