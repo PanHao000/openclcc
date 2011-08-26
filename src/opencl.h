@@ -16,7 +16,11 @@
 #ifndef OPENCLCC_OPENCL_H_
 #define OPENCLCC_OPENCL_H_
 
-#include <CL/cl.h>
+#if defined(__APPLE__)
+    #include <OpenCL/cl.h>
+#else
+    #include <CL/cl.h>
+#endif
 
 typedef struct opencl_kernel {
     const char *name;
