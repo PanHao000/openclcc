@@ -120,7 +120,9 @@ int opencl_fini(cl_context cl_ctx)
     return 0;
 }
 
-int opencl_compile(cl_context cl_ctx, opencl_kernel_t kernel, const char *args)
+#include <assert.h>
+
+int opencl_compile(cl_context cl_ctx, opencl_kernel_t kernel, const char *file_out, const char *args)
 {
     cl_program program;
     cl_int ret;
@@ -136,6 +138,31 @@ int opencl_compile(cl_context cl_ctx, opencl_kernel_t kernel, const char *args)
     }
     else {
         fprintf(stdout, "%s: Compilation succeded!\n", kernel.name);
+    }
+
+    if(file_out != NULL) {
+        size_t paramSize;
+        clGetProgramInfo(program, CL_PROGRAM_BINARY_SIZES, 0, NULL, &paramSize);
+        size_t binary_size;
+        clGetProgramInfo(program, CL_PROGRAM_BINARY_SIZES, paramSize, &binary_size, NULL);
+
+        unsigned char *binary = (unsigned char *) malloc(binary_size);
+        clGetProgramInfo(program, CL_PROGRAM_BINARIES, 0, NULL, &paramSize);
+        clGetProgramInfo(program, CL_PROGRAM_BINARIES, paramSize, &binary, NULL);
+
+        FILE *f = fopen(file_out, "a");
+        if(f == NULL) {
+            fprintf(stderr, "Error openning file %s\n", file_out);
+            return -1;
+        }
+        size_t elems = binary_size / sizeof(unsigned char);
+        size_t written = fwrite(binary, sizeof(unsigned char), elems, f);
+        if (written < elems) {
+            fprintf(stderr, "Error writing to file %s\n", file_out);
+            return -1;
+        }
+        fclose(f);
+        free(binary);
     }
 
     if((ret = clReleaseProgram(program)) != CL_SUCCESS)

@@ -19,12 +19,14 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include <unistd.h>
+
 #include "io.h"
 #include "opencl.h"
 
 static int usage(const char *name)
 {
-    fprintf(stdout, "Usage: %s <file.cl>\n", name);
+    fprintf(stdout, "Usage: %s [-o <binary_file>] <file.cl> [compilation_flags...]\n", name);
     return -1;
 }
 
@@ -56,26 +58,61 @@ static char *build_args_string(int argc, char *argv[])
     return args;
 }
 
+typedef enum {
+    PARAM_EQUAL,
+    PARAM_DIFFERENT
+} param_result;
+static int
+check_param(const char *user, const char *expected)
+{
+    if ((strlen(user) == strlen(expected)) &&
+        (strncmp(user, expected, strlen(expected)) == 0)) {
+        return PARAM_EQUAL;
+    } else {
+        return PARAM_DIFFERENT;
+    }
+}
+
+#define OUTPUT_FILE_FLAG "-o"
+
 int main(int argc, char *argv[])
 {
     int i, ret;
     opencl_kernel_t kernel;
     cl_context cl_ctx;
     char *args = NULL;
+    char *file_out = NULL;
+    unsigned offset = 0;
 
     if(argc == 1) return usage(argv[0]);
+    if(argc >= 4) {
+        if (check_param(argv[1], OUTPUT_FILE_FLAG) == PARAM_EQUAL) {
+            file_out = argv[2];
+            offset = 2;
+        }
+    }
+    argc -= offset;
+    argv += offset;
+
+    if(file_out != NULL) {
+        if(opencl_check_file(file_out) == 0) {
+            unlink(file_out);
+        }
+    }
+
+    if((args = build_args_string(argc, argv)) == NULL) return -1;
 
     if(opencl_init(&cl_ctx) < 0) return -1;
-    if((args = build_args_string(argc, argv)) == NULL) return -1;
     fprintf(stdout, "Compiler flags: %s\n", args);
 
     for(i = 1; i < argc; i++) {
-        if(*argv[i] == '-' || opencl_check_file(argv[i]) < 0) continue; /* Skip compiler flags */
+        if(*argv[i] == '-' || opencl_check_file(argv[i]) < 0)
+            continue; /* Skip compiler flags */
         if(opencl_open_kernel(argv[i], &kernel) < 0) {
             handle_standard_error(argv[i]);   
         }
 
-        ret = opencl_compile(cl_ctx, kernel, args);
+        ret = opencl_compile(cl_ctx, kernel, file_out, args);
 
         opencl_release_kernel(&kernel);
         if(ret < 0) return -1;

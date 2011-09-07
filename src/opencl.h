@@ -34,7 +34,7 @@ extern "C" {
 
 int opencl_init(cl_context *cl_ctx);
 int opencl_fini(cl_context cl_ctx);
-int opencl_compile(cl_context cl_ctx, opencl_kernel_t kernel, const char *args);
+int opencl_compile(cl_context cl_ctx, opencl_kernel_t kernel, const char *out_file, const char *args);
 
 #ifdef __cplusplus
 }

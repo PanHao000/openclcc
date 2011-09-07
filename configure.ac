@@ -10,6 +10,13 @@ LT_PATH_LD
 AUTOCONF_ENV="SHELL=/bin/sh"
 LT_INIT
 
+AC_ARG_WITH([include],
+            [AS_HELP_STRING([--with-include],
+                            [Add include directory path])],
+                            [CPPFLAGS="$CPPFLAGS -I$withval"],
+                            [])
+
+
 AC_CHECK_HEADERS(CL/cl.h, [], [
     AC_CHECK_HEADERS(OpenCL/cl.h, [], [
         echo "OpenCL header files not found in your system"
@@ -45,12 +52,6 @@ else
     AC_MSG_RESULT(no)
     CFLAGS="-Wall -O3 -fomit-frame-pointer"
 fi
-
-AC_ARG_WITH([include],
-            [AS_HELP_STRING([--with-include],
-                            [Add include directory path])],
-                            [CPPFLAGS="$CPPFLAGS -I$withval"],
-                            [])
 
 AC_CONFIG_FILES([
     Makefile
